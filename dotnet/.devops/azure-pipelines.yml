@@ -1,0 +1,124 @@
+# Builds, tests and publishes the VoiceIsolatorSharp NuGet packages (dotnet/: pure C# Inworld Voice Isolator v1) with a
+# CalVer version (yy.M.<buildId>), following the ParakeetSharp pipeline:
+#   VoiceIsolatorSharp                  the library
+#   VoiceIsolatorSharp.Models.Offline   voice-isolator-v1, packed and embedded (~218 MB)
+#   VoiceIsolatorSharp.Models.Realtime  voice-isolator-v1-realtime, packed and embedded (~198 MB)
+#   VoiceIsolatorSharp.Cli              the voice-isolate tool
+# The weights are downloaded from their pinned Hugging Face revision and checked against the release SHA-256 by
+# `voice-isolate pack`; the same downloads let the golden-fixture tests run.
+
+variables:
+  root: './dotnet'
+  solution: './dotnet/VoiceIsolator.slnx'
+  buildConfiguration: 'Release'
+  targetVersion: yy.M.$(build.buildId)
+  packageOutput: '$(Build.ArtifactStagingDirectory)/packages'
+  modelsOutput: '$(Build.SourcesDirectory)/dotnet/artifacts/models'
+  VOICE_ISOLATOR_CACHE: '$(Pipeline.Workspace)/voice-isolator-cache'
+  # Azure DevOps service connection (NuGet, external feed) used to push the packages.
+  nugetServiceConnection: 'nuget-curiosity-org'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    include:
+    - dotnet/*
+
+steps:
+- checkout: self
+  fetchDepth: 10
+
+- task: Bash@3
+  displayName: 'Create CalVer version'
+  inputs:
+    targetType: 'inline'
+    script: |
+      v="$(date +%y).$(date +%-m).$(( BUILD_BUILDID % 65536 ))"
+      echo "##vso[task.setvariable variable=targetVersion;]$v"
+      echo "Updated targetVersion to '$v'"
+
+- task: UseDotNet@2
+  displayName: 'Use .NET 11.0 SDK'
+  inputs:
+    packageType: sdk
+    version: 11.x
+    includePreviewVersions: false
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- task: DotNetCoreCLI@2
+  displayName: 'restore'
+  inputs:
+    command: 'restore'
+    projects: '$(solution)'
+
+- task: DotNetCoreCLI@2
+  displayName: 'build library and CLI'
+  inputs:
+    command: 'build'
+    projects: '$(root)/src/VoiceIsolator.Cli/VoiceIsolator.Cli.csproj'
+    arguments: '-c $(buildConfiguration) --no-restore /p:Version=$(targetVersion)'
+
+# Downloads both checkpoints (pinned revision, size and SHA-256 checked) and packs them for the model packages.
+- task: Bash@3
+  displayName: 'pack the weights'
+  inputs:
+    targetType: 'inline'
+    script: |
+      set -e
+      cli="$(root)/src/VoiceIsolator.Cli/bin/$(buildConfiguration)/net11.0/voice-isolate.dll"
+      dotnet "$cli" pack --model voice-isolator-v1 --out "$(modelsOutput)/voice-isolator-v1.vimodel"
+      dotnet "$cli" pack --model voice-isolator-v1-realtime --out "$(modelsOutput)/voice-isolator-v1-realtime.vimodel"
+
+- task: DotNetCoreCLI@2
+  displayName: 'build'
+  inputs:
+    command: 'build'
+    projects: '$(solution)'
+    arguments: '-c $(buildConfiguration) --no-restore /p:Version=$(targetVersion)'
+
+# Kernel tests and the golden fixtures (tests/fixtures) against the downloaded checkpoints. The layer-by-layer parity
+# tests need PyTorch reference dumps (dotnet/scripts/dump_reference.py) and skip themselves here.
+- task: DotNetCoreCLI@2
+  displayName: 'test'
+  env:
+    VOICE_ISOLATOR_MODELS_DIR: '$(VOICE_ISOLATOR_CACHE)'
+  inputs:
+    command: 'test'
+    projects: '$(root)/tests/VoiceIsolator.Tests/VoiceIsolator.Tests.csproj'
+    arguments: '-c $(buildConfiguration) --no-build'
+
+- task: Bash@3
+  displayName: 'pack VoiceIsolatorSharp, models and CLI'
+  inputs:
+    targetType: 'inline'
+    script: |
+      set -e
+      for p in VoiceIsolator VoiceIsolator.Models.Offline VoiceIsolator.Models.Realtime VoiceIsolator.Cli; do
+        dotnet pack "$(root)/src/$p/$p.csproj" -c $(buildConfiguration) --no-build /p:Version=$(targetVersion) -o "$(packageOutput)"
+      done
+      ls -la "$(packageOutput)"
+      # nuget.org refuses packages above 250 MB
+      for f in "$(packageOutput)"/*.nupkg; do
+        size=$(stat -c %s "$f")
+        if [ "$size" -gt 262144000 ]; then echo "$f is $size bytes, above nuget.org's 250 MB limit"; exit 1; fi
+      done
+
+- task: PublishBuildArtifacts@1
+  displayName: 'publish packages as build artifact'
+  inputs:
+    PathtoPublish: '$(packageOutput)'
+    ArtifactName: 'packages'
+
+- task: NuGetCommand@2
+  displayName: 'push nuget packages'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  inputs:
+    command: 'push'
+    packagesToPush: '$(packageOutput)/*.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: '$(nugetServiceConnection)'

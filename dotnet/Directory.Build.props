@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TieredPGO>true</TieredPGO>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- NuGet metadata shared by every package (the version is stamped by CI: /p:Version=yy.M.<buildId>). -->
+  <PropertyGroup>
+    <Authors>Voice Isolator C# port contributors</Authors>
+    <PackageProjectUrl>https://github.com/theolivenbaum/voice-isolator/tree/main/dotnet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/theolivenbaum/voice-isolator</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageTags>voice-isolation;speech-enhancement;denoising;noise-suppression;audio;48khz;streaming;mamba</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.Runtime.Intrinsics" />
+  </ItemGroup>
+</Project>

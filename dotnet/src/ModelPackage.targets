@@ -1,0 +1,27 @@
+<Project>
+  <!--
+    Shared by the model packages: embeds the packed checkpoint ($(VoiceIsolatorModelName).vimodel, made by
+    `voice-isolate pack`) as a manifest resource the library finds by name (VoiceIsolatorModels.TryOpenEmbedded).
+    The file is looked up in $(VoiceIsolatorModelsDir), by default dotnet/artifacts/models/. Without it the assembly
+    builds empty, so the solution and its tests build anywhere; packing it fails instead of publishing an empty model.
+  -->
+  <PropertyGroup>
+    <VoiceIsolatorModelsDir Condition="'$(VoiceIsolatorModelsDir)' == ''">$(MSBuildThisFileDirectory)..\artifacts\models\</VoiceIsolatorModelsDir>
+    <VoiceIsolatorModelFile>$([System.IO.Path]::Combine($(VoiceIsolatorModelsDir), '$(VoiceIsolatorModelName).vimodel'))</VoiceIsolatorModelFile>
+    <RootNamespace>VoiceIsolation.Models</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- the resource is already compressed: storing it as it is keeps the package small and packing fast -->
+    <NoWarn>$(NoWarn);NU5100;NU5123</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(VoiceIsolatorModelFile)" LogicalName="$(VoiceIsolatorModelName).vimodel" Condition="Exists('$(VoiceIsolatorModelFile)')" />
+    <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" Visible="false" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)VoiceIsolator\VoiceIsolator.csproj" />
+  </ItemGroup>
+
+  <Target Name="RequireVoiceIsolatorModel" BeforeTargets="GenerateNuspec;_GetPackageFiles" Condition="!Exists('$(VoiceIsolatorModelFile)')">
+    <Error Text="$(VoiceIsolatorModelFile) is missing: run `voice-isolate pack --model $(VoiceIsolatorModelName) --out $(VoiceIsolatorModelFile)` before packing $(PackageId)." />
+  </Target>
+</Project>

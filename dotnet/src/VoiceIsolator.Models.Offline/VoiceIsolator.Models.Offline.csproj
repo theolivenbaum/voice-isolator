@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>VoiceIsolatorSharp.Models.Offline</AssemblyName>
+    <PackageId>VoiceIsolatorSharp.Models.Offline</PackageId>
+    <VoiceIsolatorModelName>voice-isolator-v1</VoiceIsolatorModelName>
+    <Description>The Inworld Voice Isolator v1 weights for VoiceIsolatorSharp, embedded: voice-isolator-v1, the offline checkpoint for recorded audio (64M parameters, every frame sees its whole 8 s chunk). Packed losslessly (byte-plane shuffle and deflate) and checked against the release SHA-256 when loaded. Apache-2.0, see https://huggingface.co/inworld/voice-isolator.</Description>
+  </PropertyGroup>
+
+  <Import Project="..\ModelPackage.targets" />
+
+</Project>

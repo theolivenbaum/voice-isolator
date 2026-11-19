@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VoiceIsolator/VoiceIsolator.csproj" />
+    <Project Path="src/VoiceIsolator.Cli/VoiceIsolator.Cli.csproj" />
+    <Project Path="src/VoiceIsolator.Models.Offline/VoiceIsolator.Models.Offline.csproj" />
+    <Project Path="src/VoiceIsolator.Models.Realtime/VoiceIsolator.Models.Realtime.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VoiceIsolator.Tests/VoiceIsolator.Tests.csproj" />
+  </Folder>
+</Solution>
