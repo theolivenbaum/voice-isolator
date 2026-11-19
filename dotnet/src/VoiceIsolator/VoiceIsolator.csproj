@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>VoiceIsolatorSharp</AssemblyName>
+    <RootNamespace>VoiceIsolation</RootNamespace>
+    <PackageId>VoiceIsolatorSharp</PackageId>
+    <Description>Pure C# (.NET 11) inference for the Inworld Voice Isolator v1 (48 kHz voice isolation: a band-split dual-path network of rotary attention and Mamba blocks over the STFT), offline and streaming, loading the released safetensors checkpoints, with no native dependencies. The weights ship in the VoiceIsolatorSharp.Models.Offline / .Realtime packages or download from Hugging Face.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Numerics.Tensors" Version="11.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="VoiceIsolatorSharp.Tests" />
+    <InternalsVisibleTo Include="VoiceIsolator.Benchmarks" />
+  </ItemGroup>
+
+</Project>

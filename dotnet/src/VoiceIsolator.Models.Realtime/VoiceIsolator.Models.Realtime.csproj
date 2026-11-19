@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>VoiceIsolatorSharp.Models.Realtime</AssemblyName>
+    <PackageId>VoiceIsolatorSharp.Models.Realtime</PackageId>
+    <VoiceIsolatorModelName>voice-isolator-v1-realtime</VoiceIsolatorModelName>
+    <Description>The Inworld Voice Isolator v1 weights for VoiceIsolatorSharp, embedded: voice-isolator-v1-realtime, the realtime checkpoint for live audio (58M parameters, a causal stream with 0, 20 or 40 ms of look-ahead). Packed losslessly (byte-plane shuffle and deflate) and checked against the release SHA-256 when loaded. Apache-2.0, see https://huggingface.co/inworld/voice-isolator.</Description>
+  </PropertyGroup>
+
+  <Import Project="..\ModelPackage.targets" />
+
+</Project>

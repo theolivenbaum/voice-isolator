@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>voice-isolate</AssemblyName>
+    <RootNamespace>VoiceIsolation.Cli</RootNamespace>
+    <PackageId>VoiceIsolatorSharp.Cli</PackageId>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>voice-isolate</ToolCommandName>
+    <Description>Command-line 48 kHz voice isolation with the Inworld Voice Isolator v1 in pure C# (.NET 11): offline and streaming, plus model download and packing.</Description>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VoiceIsolator\VoiceIsolator.csproj" />
+  </ItemGroup>
+
+</Project>
